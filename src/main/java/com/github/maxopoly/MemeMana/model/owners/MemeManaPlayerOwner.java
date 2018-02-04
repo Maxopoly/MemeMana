@@ -26,4 +26,10 @@ public class MemeManaPlayerOwner extends  MemeManaOwner {
 		return MemeManaPlayerOwner.fromUUID(player.getUniqueId());
 	}
 
+	@Override
+	public String getNiceName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

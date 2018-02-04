@@ -53,7 +53,7 @@ public class MemeManaDAO extends ManagedDatasource {
 			cleanseManaUnits.setDouble(1, epsilon);
 			long currentTime = System.currentTimeMillis();
 			long rotTime = MemeManaPlugin.getInstance().getManaConfig().getManaRotTime();
-			cleanseManaUnits.setLong(2, currentTime - rotTime);
+			cleanseManaUnits.setTimestamp(2, new Timestamp(currentTime - rotTime));
 			cleanseManaUnits.execute();
 		} catch (SQLException e) {
 			logger.log(Level.WARNING, "Problem cleansing mana units", e);

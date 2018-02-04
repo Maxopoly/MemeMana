@@ -8,20 +8,20 @@ public class MemeManaOwnerManager {
 
 	private Map <Integer, Map<Integer, MemeManaOwner>> ownersByTypeAndExternal;
 	private Map <Integer, MemeManaOwner> ownersByInternal;
-	private int nextManaId;
+	private MemeManaDAO dao;
 
-	public MemeManaOwnerManager() {
+	public MemeManaOwnerManager(MemeManaDAO dao) {
 		this.ownersByTypeAndExternal = new TreeMap<Integer, Map<Integer,MemeManaOwner>>();
 		this.ownersByInternal = new TreeMap<Integer, MemeManaOwner>();
+		this.dao = dao;
 		reloadFromDatabase();
 	}
 
 
 	private void reloadFromDatabase() {
-		for(MemeManaOwner owner : MemeManaPlugin.getInstance().getDAO().loadAllMana().values()) {
+		for(MemeManaOwner owner : dao.loadAllMana().values()) {
 			register(owner);
 		}
-		this.nextManaId = MemeManaPlugin.getInstance().getDAO().getNextManaId();
 	}
 
 	public void register(MemeManaOwner owner) {

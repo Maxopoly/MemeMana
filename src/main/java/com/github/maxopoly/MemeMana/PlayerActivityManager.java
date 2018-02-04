@@ -1,20 +1,16 @@
 package com.github.maxopoly.MemeMana;
 
-import com.github.maxopoly.MemeMana.model.owners.MemeManaPlayerOwner;
-
 import com.github.maxopoly.MemeMana.model.ManaGainStat;
-import com.civclassic.altmanager.AltManager;
-import org.bukkit.Bukkit;
+import com.github.maxopoly.MemeMana.model.owners.MemeManaPlayerOwner;
 import java.util.Map;
 import java.util.UUID;
+import org.bukkit.Bukkit;
 
 public class PlayerActivityManager {
 
 	private Map<Integer, ManaGainStat> stats;
-	private MemeManaManager manaManager;
 
-	public PlayerActivityManager(MemeManaManager manaManager) {
-		this.manaManager = manaManager;
+	public PlayerActivityManager() {
 		reloadFromDB();
 	}
 
@@ -43,7 +39,7 @@ public class PlayerActivityManager {
 	}
 
 	public void giveOutReward(UUID player, int amount) {
-		MemeManaPlugin.getInstance().getManaManager().addMana(MemeManaPlayerOwner.fromUUID(player),amount);
+		MemeManaPlugin.getInstance().getTransactionManager().giveMana(MemeManaPlayerOwner.fromUUID(player), amount);
 		Bukkit.getPlayer(player).sendMessage("You got " + amount + " mana for logging in");
 	}
 }

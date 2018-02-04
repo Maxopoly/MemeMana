@@ -2,11 +2,22 @@ name: ${project.name}
 main: com.github.maxopoly.MemeMana.MemeManaPlugin
 author: Maxopoly
 version: ${project.version}
-depend: [CivModCore, BanStick, ExilePearl]
+depend: [CivModCore, AltManager, ExilePearl]
 commands:
-    mana:
+    manashow:
+        aliases: [mns, mana, showmana]
         permission: mememana.public
-    manaadmin:
+    manatransfer:
+        aliases: [mng,mngive,managive,givemana,mnt,mntransfer,transfermana]
+        permission: mememana.public
+    manarefill:
+        aliases: [mnr, mnf, manafill, refill]
+        permission: mememana.public
+    manareset:
+        permission: mememana.admin
+    manainspect:
+        permission: mememana.admin
+    manaincrease:
         permission: mememana.admin
 permissions:
     mememana.public:

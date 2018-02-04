@@ -65,6 +65,11 @@ public abstract class MemeManaOwner {
 	}
 
 	/**
+	 * @return Name to use in commands/GUIs to identify this owner
+	 */
+	public abstract String getNiceName();
+
+	/**
 	 * @return The id used externally in other plugins/environments to identify this owner.
 	 * It is not unique across all owners, but unique across owners of the same type
 	 */

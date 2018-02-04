@@ -3,10 +3,12 @@ package com.github.maxopoly.MemeMana.command;
 import com.github.maxopoly.MemeMana.MemeManaPlugin;
 import com.github.maxopoly.MemeMana.model.ManaGainStat;
 import com.github.maxopoly.MemeMana.model.MemeManaPouch;
-import com.github.maxopoly.MemeMana.model.owners.MemeManaOwner;
 import com.github.maxopoly.MemeMana.model.owners.MemeManaPlayerOwner;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import vg.civcraft.mc.civmodcore.command.PlayerCommand;
 
@@ -14,88 +16,97 @@ public class CmdManaAdmin extends PlayerCommand {
 	public CmdManaAdmin(String name) {
 		super(name);
 		setIdentifier("manaadmin");
-		setDescription("The admin command for Meme Mana");
-		setUsage("\n/manaadmin inspect Player -- Show a player's current mana\n/manaadmin give -- Give a player some mana\n/mana reset <Player> -- Reset a player's streak");
+		setDescription("The admin command for MemeMana. Inspects shows a players streak/mana amount, give gives a certain amount and reset resets a daily streak");
+		setUsage("\n/manaadmin <inspect|give|reset> <player> [amount]");
 		setArguments(1,3);
 	}
 
 	@Override
 	public boolean execute(CommandSender sender, String [] args) {
-		if (args[0].equals("inspect")) {
-			inspectManaAmount(sender,args);
-		} else if (args[0].equals("give")) {
-			doGive(sender,args);
-		} else if (args[0].equals("reset")) {
-			doReset(sender,args);
-		// NYI
-		//} else if (args[0].equals("transferany")) {
-			//doTransfer(sender,args);
+		if(args.length < 2) {
+			sender.sendMessage(ChatColor.RED + "You must specify a player");
+			return false;
+		}
+		MemeManaPlayerOwner owner = playerCheck(sender, args [1]);
+		if (owner == null) {
+			return true;
+		}
+		switch (args [0]) {
+			case "inspect":
+				inspectManaAmount(sender,owner);
+				break;
+			case "give":
+				doGive(sender, owner, args);
+				break;
+			case "reset":
+				doReset(sender, owner);
+				break;
+			default:
+				sender.sendMessage(ChatColor.RED + "Action " + args [0]  + " is not known");
+				return false;
 		}
 		return true;
 	}
 
-	public void inspectManaAmount(CommandSender sender, String[] args) {
-		if(args.length < 2) {
-			msg("<b>You must specify the player to inspect");
-			return;
-		}
-		MemeManaPlayerOwner owner = MemeManaPlayerOwner.fromPlayerName(args[1]);
-		if(owner == null) {
-			msg("<c>%s <b>is not a valid mana owner",args[1]);
-			return;
-		}
+	public static void inspectManaAmount(CommandSender sender, MemeManaPlayerOwner owner) {
 		MemeManaPouch pouch = owner.getPouch();
-		double manaAvailable = pouch.getContent();
-		msg("<c>%s<i> has <g>%s<i> mana",args[1],String.valueOf(manaAvailable));
+		sender.sendMessage(ChatColor.GOLD + String.format("%s has %s mana", owner.getNiceName(), pouch.getFormattedContent()));
 		ManaGainStat stat = MemeManaPlugin.getInstance().getActivityManager().getForPlayer(owner);
-		if(stat.getStreak() != 0) {
-			msg("<c>%s<g> is on a <i>%d<g> day login streak",args[1],stat.getStreak());
-		}
+		sender.sendMessage(ChatColor.GOLD + String.format("%s is on a %d day login streak", owner.getNiceName(), stat.getStreak()));
 	}
 
-	public void doGive(CommandSender sender, String[] args) {
-		if(args.length < 2) {
-			msg("<b>You must specify the player to give mana to");
-			return;
-		}
-		MemeManaOwner owner = MemeManaPlayerOwner.fromPlayerName(args[1]);
-		if(owner == null) {
-			msg("<c>%s <b>is not a valid mana owner",args[1]);
-			return;
-		}
+	public static void doGive(CommandSender sender, MemeManaPlayerOwner owner, String[] args) {
 		if(args.length < 3) {
-			msg("<b>You must specify the amount of mana to give");
+			sender.sendMessage(ChatColor.RED + "You must specify the amount of mana to give");
 			return;
 		}
-		Integer giveAmount = null;
+		int giveAmount;
 		try {
 			giveAmount = Integer.parseInt(args[2]);
-		} catch (Exception e) {
-			msg("<i>%s <b>is not a valid amount of mana",args[2]);
+		} catch (NumberFormatException e) {
+			sender.sendMessage(ChatColor.RED + args [2] + " is not a valid integer");
 			return;
 		}
-		//MemeManaPlugin.getInstance().getManaManager().addMana(owner,giveAmount);
-		msg("<g>Gave <c>%s <i>%d<g> mana",args[1],giveAmount);
+		MemeManaPlugin.getInstance().getTransactionManager().giveMana(owner, giveAmount);
+		sender.sendMessage(ChatColor.GREEN + String.format("Gave %d mana to %s", giveAmount, owner.getNiceName()));
 	}
 
-	public void doReset(CommandSender sender, String[] args) {
-		if(args.length < 2) {
-			msg("<b>You must specify the player to reset stats for");
-			return;
-		}
-		MemeManaPlayerOwner owner = MemeManaPlayerOwner.fromPlayerName(args[1]);
-		if(owner == null) {
-			msg("<c>%s <b>is not a valid player",args[1]);
-			return;
-		}
+	public static void doReset(CommandSender sender, MemeManaPlayerOwner owner) {
 		ManaGainStat stat = MemeManaPlugin.getInstance().getActivityManager().getForPlayer(owner);
 		stat.reset();
 		MemeManaPlugin.getInstance().getDAO().updateManaStat(owner,stat);
-		msg("<g>Reset mana statistics for <c>%s",args[1]);
+		sender.sendMessage(ChatColor.GREEN + String.format("Reset streak for %s",  owner.getNiceName()));
+	}
+
+	public static MemeManaPlayerOwner playerCheck(CommandSender sender, String name) {
+		MemeManaPlayerOwner owner = MemeManaPlayerOwner.fromPlayerName(name);
+		if(owner == null) {
+			sender.sendMessage(ChatColor.RED + name + "is not a valid player");
+		}
+		return owner;
 	}
 
 	@Override
 	public List <String> tabComplete(CommandSender sender, String [] args) {
-		return new LinkedList <String> (); //empty list
+		switch(args.length) {
+			case 0:
+				return new ArrayList<String>(Arrays.asList("reset", "give", "inspect"));
+			case 1:
+				if (args [1].length() == 0) {
+					return new ArrayList<String>(Arrays.asList("reset", "give", "inspect"));
+				}
+				switch (args [1].charAt(0)) {
+					case 'r':
+						return new ArrayList<String>(Arrays.asList("reset"));
+					case 'i':
+						return new ArrayList<String>(Arrays.asList("inspect"));
+					case 'g':
+						return new ArrayList<String>(Arrays.asList("give"));
+				}
+			case 2:
+				return null;
+			default:
+				return new LinkedList<String>();
+		}
 	}
 }

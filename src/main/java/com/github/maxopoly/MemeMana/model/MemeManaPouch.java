@@ -1,6 +1,8 @@
 package com.github.maxopoly.MemeMana.model;
 
 import com.github.maxopoly.MemeMana.MemeManaPlugin;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -8,6 +10,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class MemeManaPouch {
+
+	private static NumberFormat formatter = new DecimalFormat("#####0.##");
 
 	// chronologically ordered!
 	private List<MemeManaUnit> units;
@@ -53,6 +57,15 @@ public class MemeManaPouch {
 			sum += unit.getCurrentAmount();
 		}
 		return sum;
+	}
+
+	/**
+	 * Due to the internal representation as double, mana may be a very ugly decimal amount.
+	 * To avoid ugly UI's, this method rounds the value to two decimal points
+	 * @return Mana content as a string for user output
+	 */
+	public String getFormattedContent() {
+		return formatter.format(getContent());
 	}
 
 	/**
