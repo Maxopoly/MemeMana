@@ -1,7 +1,6 @@
 package com.github.maxopoly.MemeMana;
 
 import com.github.maxopoly.MemeMana.model.ManaGainStat;
-import com.github.maxopoly.MemeMana.model.MemeManaPouch;
 import com.github.maxopoly.MemeMana.model.MemeManaUnit;
 import com.github.maxopoly.MemeMana.model.owners.MemeManaOwner;
 import com.github.maxopoly.MemeMana.model.owners.MemeManaPlayerOwner;
@@ -139,13 +138,37 @@ public class MemeManaDAO extends ManagedDatasource {
 		}
 	}
 
+	public void deleteManaUnitsUpUntil(MemeManaOwner owner, MemeManaUnit newestUnit) {
+		try (Connection connection = getConnection();
+				PreparedStatement updateManaUnit = connection
+						.prepareStatement("delete from manaUnits where id <= ? and ownerId = ?;")) {
+			updateManaUnit.setInt(1, newestUnit.getID());
+			updateManaUnit.setInt(2, owner.getID());
+			updateManaUnit.execute();
+		} catch (SQLException e) {
+			logger.log(Level.WARNING, "Problem deleting mana unit batch", e);
+		}
+	}
+
+	public void transferManaUnitsUpUntil(MemeManaOwner oldOwner, MemeManaOwner newOwner, MemeManaUnit newestUnit) {
+		try (Connection connection = getConnection();
+				PreparedStatement updateManaUnit = connection
+						.prepareStatement("update manaUnits set ownerId = ? where id <= ? and ownerId = ?;")) {
+			updateManaUnit.setInt(1, newOwner.getID());
+			updateManaUnit.setInt(2, newestUnit.getID());
+			updateManaUnit.setInt(3, oldOwner.getID());
+			updateManaUnit.execute();
+		} catch (SQLException e) {
+			logger.log(Level.WARNING, "Problem transfering mana unit batch", e);
+		}
+	}
+
 	public Map<Integer, MemeManaOwner> loadAllMana() {
 		Map<Integer,MemeManaOwner> owners = new HashMap<Integer,MemeManaOwner>();
 		try (Connection connection = getConnection();
 				PreparedStatement getManaOwner = connection
 						.prepareStatement("select id, foreignId, foreignIdType from manaOwners;");
 				ResultSet rs = getManaOwner.executeQuery();) {
-			MemeManaPouch thisPouch = new MemeManaPouch();
 			int thisOwner = -1;
 			while(rs.next()) {
 				int id = rs.getInt(1);

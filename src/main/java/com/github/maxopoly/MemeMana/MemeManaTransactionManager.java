@@ -1,5 +1,7 @@
 package com.github.maxopoly.MemeMana;
 
+import java.util.List;
+
 import com.github.maxopoly.MemeMana.model.MemeManaUnit;
 import com.github.maxopoly.MemeMana.model.owners.MemeManaOwner;
 
@@ -28,6 +30,14 @@ public class MemeManaTransactionManager {
 		MemeManaUnit unit = new MemeManaUnit(nextManaId++,amount);
 		owner.getPouch().addNewUnit(unit);
 		dao.addManaUnit(unit, owner);
+	}
+
+	public boolean transferMana(MemeManaOwner giver, MemeManaOwner receiver, double amount) {
+		List<MemeManaUnit> trans = giver.getPouch().transfer(receiver, amount);
+		if (trans == null) {
+			return false;
+		}
+		for(Mana)
 	}
 
 

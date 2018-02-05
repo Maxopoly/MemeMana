@@ -54,7 +54,7 @@ public abstract class MemeManaOwner {
 	protected MemeManaOwner(int id, int foreignId) {
 		this.id = id;
 		this.foreignId = foreignId;
-		this.pouch = new MemeManaPouch();
+		this.pouch = new MemeManaPouch(this);
 	}
 
 	/**
